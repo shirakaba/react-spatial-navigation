@@ -368,7 +368,7 @@ class SpatialNavigation {
   }
 
   bindEventHandlers() {
-    if (window) {
+    if (window && window.document) {
       this.keyDownEventListener = (event) => {
         if (this.paused === true) {
           return;
@@ -418,7 +418,7 @@ class SpatialNavigation {
   }
 
   unbindEventHandlers() {
-    if (window) {
+    if (window && window.document) {
       window.removeEventListener('keydown', this.keyDownEventListener);
       this.keyDownEventListener = null;
 
