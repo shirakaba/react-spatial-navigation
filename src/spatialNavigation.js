@@ -86,72 +86,72 @@ class SpatialNavigation {
     };
 
     switch (direction) {
-    case DIRECTION_UP: {
-      const y = isSibling ? itemY + itemHeight : itemY;
+      case DIRECTION_UP: {
+        const y = isSibling ? itemY + itemHeight : itemY;
 
-      result.a = {
-        x: itemX,
-        y
-      };
+        result.a = {
+          x: itemX,
+          y
+        };
 
-      result.b = {
-        x: itemX + itemWidth,
-        y
-      };
+        result.b = {
+          x: itemX + itemWidth,
+          y
+        };
 
-      break;
-    }
+        break;
+      }
 
-    case DIRECTION_DOWN: {
-      const y = isSibling ? itemY : itemY + itemHeight;
+      case DIRECTION_DOWN: {
+        const y = isSibling ? itemY : itemY + itemHeight;
 
-      result.a = {
-        x: itemX,
-        y
-      };
+        result.a = {
+          x: itemX,
+          y
+        };
 
-      result.b = {
-        x: itemX + itemWidth,
-        y
-      };
+        result.b = {
+          x: itemX + itemWidth,
+          y
+        };
 
-      break;
-    }
+        break;
+      }
 
-    case DIRECTION_LEFT: {
-      const x = isSibling ? itemX + itemWidth : itemX;
+      case DIRECTION_LEFT: {
+        const x = isSibling ? itemX + itemWidth : itemX;
 
-      result.a = {
-        x,
-        y: itemY
-      };
+        result.a = {
+          x,
+          y: itemY
+        };
 
-      result.b = {
-        x,
-        y: itemY + itemHeight
-      };
+        result.b = {
+          x,
+          y: itemY + itemHeight
+        };
 
-      break;
-    }
+        break;
+      }
 
-    case DIRECTION_RIGHT: {
-      const x = isSibling ? itemX : itemX + itemWidth;
+      case DIRECTION_RIGHT: {
+        const x = isSibling ? itemX : itemX + itemWidth;
 
-      result.a = {
-        x,
-        y: itemY
-      };
+        result.a = {
+          x,
+          y: itemY
+        };
 
-      result.b = {
-        x,
-        y: itemY + itemHeight
-      };
+        result.b = {
+          x,
+          y: itemY + itemHeight
+        };
 
-      break;
-    }
+        break;
+      }
 
-    default:
-      break;
+      default:
+        break;
     }
 
     return result;
@@ -300,6 +300,7 @@ class SpatialNavigation {
     this.pause = this.pause.bind(this);
     this.resume = this.resume.bind(this);
     this.setFocus = this.setFocus.bind(this);
+    this.navigateByDirection = this.navigateByDirection.bind(this);
     this.init = this.init.bind(this);
     this.setKeyMap = this.setKeyMap.bind(this);
 
@@ -374,7 +375,9 @@ class SpatialNavigation {
           return;
         }
 
-        this.logIndex++;
+        if (this.debug) {
+          this.logIndex += 1;
+        }
 
         const eventType = findKey(this.getKeyMap(), (code) => event.keyCode === code);
 
@@ -382,23 +385,22 @@ class SpatialNavigation {
           return;
         }
 
+        event.preventDefault();
+        event.stopPropagation();
+
         if (eventType === KEY_ENTER && this.focusKey) {
-          event.preventDefault();
-          event.stopPropagation();
-
           this.onEnterPress();
+
+          return;
+        }
+
+        const preventDefaultNavigation = this.onArrowPress(eventType) === false;
+
+        if (preventDefaultNavigation) {
+          this.log('keyDownEventListener', 'default navigation prevented');
+          this.visualDebugger && this.visualDebugger.clear();
         } else {
-          event.preventDefault();
-          event.stopPropagation();
-
-          const preventDefaultNavigation = this.onArrowPress(eventType) === false;
-
-          if (preventDefaultNavigation) {
-            this.log('keyDownEventListener', 'default navigation prevented');
-            this.visualDebugger && this.visualDebugger.clear();
-          } else {
-            this.onKeyEvent(event.keyCode);
-          }
+          this.onKeyEvent(event.keyCode);
         }
       };
 
@@ -463,6 +465,29 @@ class SpatialNavigation {
      * component.focusable. */
 
     return component && component.onArrowPressHandler && component.onArrowPressHandler(...args);
+  }
+
+  /**
+   * Move focus by direction, if you can't use buttons or focusing by key.
+   *
+   * @param {string} direction
+   *
+   * @example
+   * navigateByDirection('right') // The focus is moved to right
+   */
+  navigateByDirection(direction) {
+    if (this.paused === true) {
+      return;
+    }
+
+    const validDirections = [DIRECTION_DOWN, DIRECTION_UP, DIRECTION_LEFT, DIRECTION_RIGHT];
+
+    if (validDirections.includes(direction)) {
+      this.log('navigateByDirection', 'direction', direction);
+      this.smartNavigate(direction);
+    } else {
+      this.log('navigateByDirection', `Invalid direction. You passed: \`${direction}\`, but you can use only these: `, validDirections);
+    }
   }
 
   onKeyEvent(keyCode) {
