@@ -320,12 +320,13 @@ class SpatialNavigation {
     debug: debug = false,
     visualDebug: visualDebug = false,
     nativeMode: nativeMode = false,
-    throttle: throttle = 0
+    throttle: throttle = 0,
+    keyListenerUseCapture: keyListenerUseCapture = false
   } = {}) {
     if (!this.enabled) {
       this.enabled = true;
       this.nativeMode = nativeMode;
-
+      this.keyListenerUseCapture = keyListenerUseCapture;
       this.debug = debug;
 
       if (!this.nativeMode) {
@@ -418,20 +419,20 @@ class SpatialNavigation {
         // When throttling then make sure to only throttle key down and cancel any queued functions in case of key up
         this.keyUpEventListener = () => this.keyDownEventListener.cancel();
 
-        window.addEventListener('keyup', this.keyUpEventListener);
+        window.addEventListener('keyup', this.keyUpEventListener, this.keyListenerUseCapture);
       }
 
-      window.addEventListener('keydown', this.keyDownEventListener);
+      window.addEventListener('keydown', this.keyDownEventListener, this.keyListenerUseCapture);
     }
   }
 
   unbindEventHandlers() {
     if (window) {
-      window.removeEventListener('keydown', this.keyDownEventListener);
+      window.removeEventListener('keydown', this.keyDownEventListener, this.keyListenerUseCapture);
       this.keyDownEventListener = null;
 
       if (this.throttle) {
-        window.removeEventListener('keyup', this.keyUpEventListener);
+        window.removeEventListener('keyup', this.keyUpEventListener, this.keyListenerUseCapture);
         this.keyUpEventListener = null;
       }
     }
