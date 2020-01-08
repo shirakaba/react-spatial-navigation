@@ -45,6 +45,12 @@ const THROTTLE_OPTIONS = {
   trailing: false
 };
 
+export const getChildClosestToOrigin = (children) => {
+  const childrenClosestToOrigin = sortBy(children, ({layout}) => Math.abs(layout.left) + Math.abs(layout.top));
+
+  return first(childrenClosestToOrigin);
+};
+
 /* eslint-disable no-nested-ternary */
 class SpatialNavigation {
   /**
@@ -486,7 +492,11 @@ class SpatialNavigation {
       this.log('navigateByDirection', 'direction', direction);
       this.smartNavigate(direction);
     } else {
-      this.log('navigateByDirection', `Invalid direction. You passed: \`${direction}\`, but you can use only these: `, validDirections);
+      this.log(
+        'navigateByDirection',
+        `Invalid direction. You passed: \`${direction}\`, but you can use only these: `,
+        validDirections
+      );
     }
   }
 
@@ -553,8 +563,8 @@ class SpatialNavigation {
         this.log('smartNavigate', 'currentCutoffCoordinate', currentCutoffCoordinate);
         this.log(
           'smartNavigate', 'siblings', `${siblings.length} elements:`,
-          siblings.map((s) => s.focusKey).join(', '),
-          siblings.map((s) => s.node)
+          siblings.map((sibling) => sibling.focusKey).join(', '),
+          siblings.map((sibling) => sibling.node)
         );
       }
 
@@ -663,9 +673,7 @@ class SpatialNavigation {
       /**
        * Otherwise, trying to focus something by coordinates
        */
-      const sortedXChildren = sortBy(children, (child) => child.layout.left);
-      const sortedYChildren = sortBy(sortedXChildren, (child) => child.layout.top);
-      const {focusKey: childKey} = first(sortedYChildren);
+      const {focusKey: childKey} = getChildClosestToOrigin(children);
 
       this.log('getNextFocusKey', 'childKey will be focused', childKey);
 
