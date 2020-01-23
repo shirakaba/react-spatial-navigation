@@ -807,6 +807,23 @@ class SpatialNavigation {
     return null;
   }
 
+  getFocusableComponent(focusKey = this.focusKey) {
+    if (typeof focusKey !== 'string') {
+      return null;
+    }
+    const focusedComponent = this.focusableComponents[focusKey];
+
+    return typeof focusedComponent === 'undefined' ? null : focusedComponent;
+  }
+
+  getCurrentFocusedComponent() {
+    return this.getFocusableComponent(this.focusKey);
+  }
+
+  getCurrentFocusedKey() {
+    return this.focusKey;
+  }
+
   setCurrentFocusedKey(focusKey) {
     if (this.isParticipatingFocusableComponent(this.focusKey) && focusKey !== this.focusKey) {
       const oldComponent = this.focusableComponents[this.focusKey];
